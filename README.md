@@ -2,8 +2,8 @@ Sokoban
 ===================
 
 This is a simple Sokoban game implementation running in console mode.
-It's writen in c++ with object-based data structures.
-The plan was to also include a solver for arbitrary sokoban levels but this was no implemented because of the lack of time.
+It's writen in C++ with object-based data structures.
+The plan was to also include a solver for arbitrary sokoban levels but this was not implemented because of the lack of time.
 
 Makefile Targets
 -------------
