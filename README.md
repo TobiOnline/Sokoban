@@ -9,12 +9,14 @@ Makefile Targets
 -------------
 
  1. make compile
-Compiles the game to the desired platform.
-A lot of additional compile / warning switches are activated to provide the best error minimizing support.
+> Compiles the game to the desired platform.
+> A lot of additional compile / warning switches are activated to provide the best error minimizing support.
+
  2. make checkstyle
-Runs a checkstyle.py script in the parent directory syntax-checing all .h and .cpp files.
+> Runs a checkstyle.py script in the parent directory syntax-checing all .h and .cpp files.
+
  3. make run
-Runs the main game with the level folder set to "Levels".
+> Runs the main game with the level folder set to "Levels".
 
 Requirements
 -------------
