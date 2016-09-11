@@ -159,6 +159,13 @@ void LevelSelector::update() {
   if (!_enabled)
     return;
 
+  _display->setEnabled(false);
+  const Map* savedMap = _display->getMap();
+  if (savedMap) {
+    _display->setMap(nullptr);
+    delete savedMap;
+  }
+
   werase(_window);
 
   bool parent = (_relativePath.length() > 0);
@@ -169,6 +176,12 @@ void LevelSelector::update() {
   if (parent) {
     wmove(_window, _rectangle.y, _rectangle.x + ((_index == 0) ? 0 : 2));
     waddstr(_window, ((_index == 0) ? "->.." : ".."));
+  }
+
+  if ((directories == 0) && (levels == 0)) {
+    wmove(_window, _rectangle.y, _rectangle.x);
+    waddstr(_window, "No levels found!");
+    return;
   }
 
   uint32_t startIndex = ((_index > 4) ? _index - 4 : 0);
@@ -205,13 +218,6 @@ void LevelSelector::update() {
       waddstr(_window, (line->length() <= _maxFileName)
           ? line->c_str() : line->substr(0, _maxFileName).c_str());
     }
-  }
-
-  _display->setEnabled(false);
-  const Map* savedMap = _display->getMap();
-  if (savedMap) {
-    _display->setMap(nullptr);
-    delete savedMap;
   }
 
   // Debug
@@ -311,8 +317,6 @@ void LevelSelector::refreshContent() {
       }
     }
     closedir(directory);
-  } else {
-    _maps.push_back(MapEntry("Could not list directory contents!", "-"));
   }
 }
 
