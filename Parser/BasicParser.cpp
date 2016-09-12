@@ -98,7 +98,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream) {
   if (n == nullptr) {
     return -1;
   }
-  
+
   bufptr = *lineptr;
   size = *n;
 
@@ -116,7 +116,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream) {
   }
 
   p = bufptr;
-  while(c != EOF) {
+  while (c != EOF) {
     if ((p + 1) > (bufptr + size)) {
       size = size + 128;
       bufptr = reinterpret_cast<char*>(realloc(bufptr, size));

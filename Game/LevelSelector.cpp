@@ -298,7 +298,7 @@ void LevelSelector::refreshContent() {
         fullPath.append("\\");
       }
       fullPath.append(entry->d_name);
-      
+
       struct stat fileStats;
       if (stat(fullPath.c_str(), &fileStats) != 0) {
         continue;

@@ -22,13 +22,12 @@
 
 #ifdef __MINGW32__
 // http://stackoverflow.com/questions/5404277/porting-clock-gettime-to-windows
-int clock_gettime(int, struct timespec *spec)      //C-file part
-{
+int clock_gettime(int, struct timespec *spec) {
   __int64 wintime;
   GetSystemTimeAsFileTime(reinterpret_cast<FILETIME*>(&wintime));
-  wintime -= 116444736000000000;  //1jan1601 to 1jan1970
-  spec->tv_sec = wintime / 10000000;           //seconds
-  spec->tv_nsec = wintime % 10000000 * 100;      //nano-seconds
+  wintime -= 116444736000000000;  // 1jan1601 to 1jan1970
+  spec->tv_sec = wintime / 10000000;  // seconds
+  spec->tv_nsec = wintime % 10000000 * 100;  // nano-seconds
   return 0;
 }
 #endif
