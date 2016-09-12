@@ -79,8 +79,8 @@ const Map* BasicParser::readData(std::string data) {
 const Map* BasicParser::readStream(FILE* stream) {
   _mapBuilder.reset();
 
-  char* buffer;
-  uint64_t bufferLength;
+  char* buffer = nullptr;
+  uint64_t bufferLength = 0;
 
   std::string data;
 
@@ -96,6 +96,10 @@ const Map* BasicParser::readStream(FILE* stream) {
 
   if ((index + 1) < data.size())
     readLine(data.substr(index), line);
+
+
+  if (buffer)
+    free(buffer);  // Allocated using malloc
 
   return _mapBuilder.build().second;
 }

@@ -25,6 +25,9 @@ HighscoreDisplay::HighscoreDisplay(WINDOW* window)
 HighscoreDisplay::~HighscoreDisplay() {
   if (_highscore)
     delete _highscore;
+
+  if (_newScore)
+    delete _newScore;
 }
 
 void HighscoreDisplay::setEnabled(bool enabled) {
@@ -47,25 +50,28 @@ HighscoreTable* HighscoreDisplay::getHighscore() const {
   return _highscore;
 }
 
-bool HighscoreDisplay::load(const std::string& map) {
-  std::string name(map);
+bool HighscoreDisplay::load() {
+  std::string name(_map);
   name.append(".score");
 
   return _highscore->load(name);
 }
 
-void HighscoreDisplay::setNewScore(const HighscoreEntry* entry,
-    const std::string& map) {
-  _creatingNewScore = (entry != nullptr);
-
-  if (entry == nullptr) {
-    _newScore = nullptr;
-  } else {
-    _newScore = new HighscoreEntry(*entry);
-    delete entry;
-  }
-
+void HighscoreDisplay::setMap(const std::string& map) {
   _map = map;
+}
+
+void HighscoreDisplay::setNewScore(const HighscoreEntry& entry) {
+  _creatingNewScore = true;
+
+  if (_newScore)
+    delete _newScore;
+
+  _newScore = new HighscoreEntry(entry);
+}
+
+void HighscoreDisplay::resetNewScore() {
+  _creatingNewScore = false;
 }
 
 void HighscoreDisplay::update() {
@@ -154,7 +160,7 @@ bool HighscoreDisplay::input(uint32_t key) {
     case '\r':
     case '\n':
       _newScore->name = std::string(_newScoreName);
-      _creatingNewScore = false;
+      resetNewScore();
 
       std::string name(_map);
       name.append(".score");

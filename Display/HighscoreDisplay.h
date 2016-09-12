@@ -73,14 +73,24 @@ class HighscoreDisplay {
   /*
    * Sets the new generated highscore entry.
    */
-  void setNewScore(const HighscoreEntry* entry, const std::string& map);
+  void setNewScore(const HighscoreEntry& entry);
+
+  /*
+   * Sets the state as no new score is created.
+   */
+  void resetNewScore();
+
+  /*
+   * Sets the map path of this highscore display.
+   */
+  void setMap(const std::string& map);
 
   /*
    * Loads the saved highscores for the provided map
    * from the disk.
    * Returns if the highscore list could be loaded.
    */
-  bool load(const std::string& map);
+  bool load();
 
   /*
    * Returns the current highscore table.

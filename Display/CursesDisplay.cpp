@@ -49,6 +49,9 @@ Rectangle CursesDisplay::getRectangle() const {
 }
 
 void CursesDisplay::setMap(const Map* map) {
+  if ((map != _map) && (_map))
+    delete _map;
+
   _map = map;
 
   if (map) {

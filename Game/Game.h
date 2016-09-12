@@ -45,7 +45,6 @@ class Game {
   ColoredDisplay* _display;
   HighscoreDisplay* _highscoreDisplay;
 
-  const Map* _map;
   const MapEntry* _mapEntry;
   GameLogic _gameLogic;
 

@@ -32,6 +32,10 @@ LevelSelector::LevelSelector(const std::string& path, WINDOW* window,
 
 LevelSelector::~LevelSelector() {
   if (_display) {
+    const Map* map = _display->getMap();
+    if (map)
+      delete map;
+
     delete _display;
   }
 }
@@ -142,15 +146,18 @@ void LevelSelector::input(SokobanLevelSelector::Input input) {
     }
 
     uint32_t mapIndex = _index - (parent ? 1 : 0) - _directories.size();
+    if (input == SokobanLevelSelector::Input::Highscore) {
+      _callback(_maps[mapIndex], nullptr, true);
+      break;
+    }
+
     const Map* map = _display->getMap();
     if (!map) {
       break;
     }
 
     _display->setEnabled(false);
-    _display->setMap(nullptr);
-    _callback(_maps[mapIndex], map,
-        (input == SokobanLevelSelector::Input::Highscore));
+    _callback(_maps[mapIndex], map, false);
     break;
   }
 }
@@ -160,11 +167,7 @@ void LevelSelector::update() {
     return;
 
   _display->setEnabled(false);
-  const Map* savedMap = _display->getMap();
-  if (savedMap) {
-    _display->setMap(nullptr);
-    delete savedMap;
-  }
+  _display->setMap(nullptr);
 
   werase(_window);
 

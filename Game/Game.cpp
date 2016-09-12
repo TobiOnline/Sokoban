@@ -25,7 +25,6 @@ Game::Game(const std::string& directory) {
   _quit = false;
   _directory = directory;
 
-  _map = nullptr;
   _mapEntry = nullptr;
 
   if (initDisplay() != 0) {
@@ -60,18 +59,17 @@ Game::Game(const std::string& directory) {
 }
 
 Game::~Game() {
-  switch (_state) {
-  case SokobanGame::State::Play:
-  case SokobanGame::State::LevelSelect:
+  if (_levelSelector)
     delete _levelSelector;
+
+  if (_display)
     delete _display;
 
-    if (_map)
-      delete _map;
-    break;
-  default:
-    break;
-  }
+  if (_highscoreDisplay)
+    delete _highscoreDisplay;
+
+  if (_mapEntry)
+    delete _mapEntry;
 
   destroyDisplay();
 }
@@ -93,10 +91,11 @@ void Game::play() {
 
 void Game::onLevelSelected(const MapEntry& level, const Map* map,
     bool highscore) {
-  if (highscore) {
-    _highscoreDisplay->load(level.getPath());
+  _levelSelector->setEnabled(false);
 
-    _levelSelector->setEnabled(false);
+  if (highscore) {
+    _highscoreDisplay->setMap(level.getPath());
+    _highscoreDisplay->load();
     _highscoreDisplay->setEnabled(true);
 
     werase(_window);
@@ -107,20 +106,17 @@ void Game::onLevelSelected(const MapEntry& level, const Map* map,
     return;
   }
 
-  _levelSelector->setEnabled(false);
   _state = SokobanGame::State::Play;
 
-  _map = map;
+  if (_mapEntry)
+    delete _mapEntry;
   _mapEntry = new MapEntry(level);
-
-  _gameLogic.reset(_map);
+  _gameLogic.reset(map);
 
   wclear(_window);
-
   _display->setMap(map);
   _display->updateState(_gameLogic.getState());
   _display->setEnabled(true);
-
   wrefresh(_window);
 }
 
@@ -186,7 +182,6 @@ bool Game::handleKey() {
       return false;
     case 'm':  // Menu
     case 'q':  // Quit to menu
-      _state = SokobanGame::LevelSelect;
       _display->setEnabled(false);
       _levelSelector->setEnabled(true);
       _state = SokobanGame::State::LevelSelect;
@@ -214,20 +209,21 @@ bool Game::handleKey() {
       break;
     case 'R':  // reset
     case 'r':
-      _gameLogic.reset(_map);
+      _gameLogic.reset(_display->getMap());
       break;
     default:
       break;
     }
 
     if (_gameLogic.isFinished()) {
-      HighscoreEntry* entry = new HighscoreEntry();
-      entry->steps = _gameLogic.getSteps();
-      entry->time = _gameLogic.getTime();
-      entry->name = std::string();
+      _highscoreDisplay->setMap(_mapEntry->getPath());
+      _highscoreDisplay->load();
 
-      _highscoreDisplay->load(_mapEntry->getPath());
-      _highscoreDisplay->setNewScore(entry, _mapEntry->getPath());
+      HighscoreEntry entry;
+      entry.steps = _gameLogic.getSteps();
+      entry.time = _gameLogic.getTime();
+      entry.name = std::string();
+      _highscoreDisplay->setNewScore(entry);
 
       _display->setEnabled(false);
       _highscoreDisplay->setEnabled(true);
@@ -251,8 +247,8 @@ bool Game::handleKey() {
     wrefresh(_window);
     break;
   }
-  case SokobanGame::Highscore:
 
+  case SokobanGame::Highscore:
     if (_highscoreDisplay->isTypingName()) {
       if (!_highscoreDisplay->input(key)) {
         return false;
@@ -263,13 +259,13 @@ bool Game::handleKey() {
         return false;
       case 'm':  // Menu
       case 'q':  // Quit to menu
-        _state = SokobanGame::LevelSelect;
+        _state = SokobanGame::State::LevelSelect;
         _highscoreDisplay->setEnabled(false);
         _levelSelector->setEnabled(true);
         return true;
       case 'r':  // Replay
         _highscoreDisplay->setEnabled(false);
-        onLevelSelected(*_mapEntry, _map, false);
+        onLevelSelected(*_mapEntry, _display->getMap(), false);
         return true;
       }
     }
