@@ -1,5 +1,7 @@
 // Copyright Tobias Faller 2016
 
+#include <getopt.h>
+
 #include <iostream>
 #include <cstdio>
 #include <string>

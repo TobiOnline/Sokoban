@@ -4,6 +4,7 @@
 
 #include <curses.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #include <string>
 #include <algorithm>
@@ -122,7 +123,11 @@ void LevelSelector::input(SokobanLevelSelector::Input input) {
   case SokobanLevelSelector::Input::Select:
     if (parent && (_index == 0)) {
       // Go to parent directory
+#ifdef __MINGW32__
+      if (_relativePath.find('\\') == std::string::npos) {
+#else
       if (_relativePath.find('/') == std::string::npos) {
+#endif
         _relativePath = "";
       } else {
         _relativePath = _relativePath.substr(0, _relativePath.find('/'));
@@ -136,7 +141,11 @@ void LevelSelector::input(SokobanLevelSelector::Input input) {
     if ((_index - (parent ? 1 : 0)) < _directories.size()) {
       // Go to child directory
       if (parent) {
+#ifdef __MINGW32__
+        _relativePath.append("\\");
+#else
         _relativePath.append("/");
+#endif
       }
       _relativePath.append(_directories[_index - (parent ? 1 : 0)]);
 
@@ -267,7 +276,11 @@ void LevelSelector::refreshContent() {
   path.append(_path);
 
   if (_relativePath.length() > 0) {
+#ifdef __MINGW32__
+    path.append("\\");
+#else
     path.append("/");
+#endif
     path.append(_relativePath);
   }
 
@@ -277,6 +290,45 @@ void LevelSelector::refreshContent() {
   if ((directory = opendir(path.c_str())) != NULL) {
     dirent* entry;
     while ((entry = readdir(directory)) != NULL) {
+#ifdef __MINGW32__
+      std::string fullPath;
+      fullPath.append(path);
+
+      if (fullPath.size() > 0) {
+        fullPath.append("\\");
+      }
+      fullPath.append(entry->d_name);
+      
+      struct stat fileStats;
+      if (stat(fullPath.c_str(), &fileStats) != 0) {
+        continue;
+      }
+
+      if (S_ISDIR(fileStats.st_mode)) {
+        // Ingore directories starting with '.'
+        if (entry->d_name[0] == '.') {
+          continue;
+        }
+
+        _directories.push_back(entry->d_name);
+        continue;
+      } else if (S_ISREG(fileStats.st_mode)) {
+        std::string levelPath = entry->d_name;
+
+        size_t position = levelPath.find_last_of(".");
+        if ((position == std::string::npos)
+            || levelPath.substr(position).compare(".sok") != 0) {
+          continue;
+        }
+
+        std::string levelName(levelPath.substr(0, position));
+        std::replace(levelName.begin(), levelName.end(), '_', ' ');
+        _maps.push_back(MapEntry(levelName, fullPath));
+        continue;
+      }
+
+      continue;
+#else
       switch (entry->d_type) {
       case DT_DIR:
         // Ingore directories starting with '.'
@@ -301,14 +353,11 @@ void LevelSelector::refreshContent() {
           std::replace(levelName.begin(), levelName.end(), '_', ' ');
 
           std::string fullPath;
-          fullPath.append(_path);
+          fullPath.append(path);
 
-          if (_relativePath.length() > 0) {
+          if (fullPath.size() > 0) {
             fullPath.append("/");
-            fullPath.append(_relativePath);
           }
-
-          fullPath.append("/");
           fullPath.append(entry->d_name);
 
           _maps.push_back(MapEntry(levelName, fullPath));
@@ -318,6 +367,7 @@ void LevelSelector::refreshContent() {
       default:  // Ignore
         break;
       }
+#endif
     }
     closedir(directory);
   }

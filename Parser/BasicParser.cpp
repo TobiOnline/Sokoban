@@ -2,6 +2,9 @@
 
 #include "BasicParser.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <string>
 
 using Sokoban::SokobanParser::Tokens;
@@ -76,11 +79,71 @@ const Map* BasicParser::readData(std::string data) {
   return _mapBuilder.build().second;
 }
 
+#ifdef __MINGW32__
+/* This code is public domain -- Will Hartung 4/9/09 */
+size_t getline(char **lineptr, size_t *n, FILE *stream) {
+  char *bufptr = nullptr;
+  char *p = bufptr;
+  size_t size;
+  int c;
+
+  if (lineptr == nullptr) {
+    return -1;
+  }
+
+  if (stream == nullptr) {
+    return -1;
+  }
+
+  if (n == nullptr) {
+    return -1;
+  }
+  
+  bufptr = *lineptr;
+  size = *n;
+
+  c = fgetc(stream);
+  if (c == EOF) {
+    return -1;
+  }
+
+  if (bufptr == nullptr) {
+    bufptr = reinterpret_cast<char*>(malloc(128));
+    if (bufptr == nullptr) {
+      return -1;
+    }
+    size = 128;
+  }
+
+  p = bufptr;
+  while(c != EOF) {
+    if ((p + 1) > (bufptr + size)) {
+      size = size + 128;
+      bufptr = reinterpret_cast<char*>(realloc(bufptr, size));
+      if (bufptr == nullptr) {
+        return -1;
+      }
+    }
+    *p++ = c;
+    if (c == '\n') {
+      break;
+    }
+    c = fgetc(stream);
+  }
+
+  *p++ = '\0';
+  *lineptr = bufptr;
+  *n = size;
+
+  return p - bufptr - 1;
+}
+#endif
+
 const Map* BasicParser::readStream(FILE* stream) {
   _mapBuilder.reset();
 
   char* buffer = nullptr;
-  uint64_t bufferLength = 0;
+  size_t bufferLength = 0;
 
   std::string data;
 

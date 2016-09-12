@@ -11,6 +11,10 @@ Makefile Targets
  1. make compile
 > Compiles the game to the desired platform.
 > A lot of additional compile / warning switches are activated to provide the best error minimizing support.
+> If you want to use MINGW with Cygwin on Windows (Program running outside the bash shell) use the following command:
+>> make compile CROSS_COMPILE_PREFIX=x86_64-w64-mingw32- CROSS_COMPILE_SWITCHES="-static-libstdc++"
+>
+> You'll then also have to copy the ncrusesw6.dll (64-bit version) library into the program directory.
 
  2. make checkstyle
 > Runs a checkstyle.py script in the parent directory syntax-checing all .h and .cpp files.
